@@ -11,4 +11,5 @@ Depends on having SDL2 installed/in a bin dir, OpenGL support and LuaJIT.
 *Enjoy!*
 
 SDL2 bindings from https://github.com/torch/sdl2-ffi
+
 OpenGL bindings from LPGhatguy + slime.
