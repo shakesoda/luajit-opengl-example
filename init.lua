@@ -5,12 +5,14 @@ local opengl = require "libs.opengl"
 -- Make Sublime Text actually output things as they come.
 io.stdout:setvbuf("no")
 
-function main()
+function main(flags)
 	sdl.init(sdl.INIT_EVERYTHING)
 
-	sdl.GL_SetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 3)
-	sdl.GL_SetAttribute(sdl.GL_CONTEXT_MINOR_VERSION, 3)
-	sdl.GL_SetAttribute(sdl.GL_CONTEXT_PROFILE_MASK, sdl.GL_CONTEXT_PROFILE_CORE)
+	if flags.gl3 then
+		sdl.GL_SetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 3)
+		sdl.GL_SetAttribute(sdl.GL_CONTEXT_MINOR_VERSION, 3)
+		sdl.GL_SetAttribute(sdl.GL_CONTEXT_PROFILE_MASK, sdl.GL_CONTEXT_PROFILE_CORE)
+	end
 
 	local window = sdl.createWindow("Test",
 		sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
@@ -98,4 +100,16 @@ function main()
 	return 0
 end
 
-return main()
+local flags = {
+	gl3 = false
+}
+
+for _, v in ipairs{...} do
+	for k, _ in pairs(flags) do
+		if v == "--" .. k then
+			flags[k] = true
+		end
+	end
+end
+
+return main(flags)
