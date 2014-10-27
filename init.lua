@@ -1,6 +1,6 @@
 local ffi = require "ffi"
 local sdl = require "libs.sdl2.init"
-local opengl = require "libs/opengl"
+local opengl = require "libs.opengl"
 
 -- Make Sublime Text actually output things as they come.
 io.stdout:setvbuf("no")
