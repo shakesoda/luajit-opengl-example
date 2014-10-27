@@ -41,18 +41,6 @@ function main(flags)
 
 	print(string.format("OpenGL %s on %s", version, renderer))
 
-	-- Useful for figuring out events and such.
-	local function translate_sdl(value)
-		local translated
-		for k,v in pairs(sdl) do
-			if value == v then
-				translated = k
-				break
-			end
-		end
-		return translated or "<unknown>"
-	end
-
 	local function handle_events()
 		local event = ffi.new("SDL_Event[?]", 1)
 		sdl.pollEvent(event)
@@ -63,6 +51,9 @@ function main(flags)
 		end
 
 		local handlers = {
+			[sdl.QUIT] = function()
+				return false
+			end,
 			[sdl.KEYDOWN] = function(event)
 				print("key down")
 				local e = event.key.keysym
@@ -71,14 +62,17 @@ function main(flags)
 					print("GOODBYE MY FRIEND")
 					return false
 				end
-			end
+			end,
+			[sdl.MOUSEMOTION] = function() return true end,
+			-- resize, minimize, etc.
+			[sdl.WINDOWEVENT] = function() return true end
 		}
 
 		if handlers[event.type] then
 			return handlers[event.type](event)
 		end
 
-		print(string.format("Unhandled event type: %s", translate_sdl(event.type)))
+		print(string.format("Unhandled event type: %s", event.type))
 		return true
 	end
 
