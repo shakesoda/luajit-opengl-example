@@ -2,6 +2,9 @@ local ffi = require "ffi"
 local sdl = require "libs.sdl2.init"
 local opengl = require "libs/opengl"
 
+-- Make Sublime Text actually output things as they come.
+io.stdout:setvbuf("no")
+
 function main()
 	sdl.init(sdl.INIT_EVERYTHING)
 
@@ -11,7 +14,7 @@ function main()
 
 	local window = sdl.createWindow("Test",
 		sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
-		1280, 720,
+		854, 480,
 		bit.bor(
 			tonumber(sdl.WINDOW_OPENGL),
 			tonumber(sdl.WINDOW_RESIZABLE)
@@ -32,23 +35,60 @@ function main()
 	opengl:import()
 
 	local version = ffi.string(gl.GetString(GL.VERSION))
-	local vendor = ffi.string(gl.GetString(GL.VENDOR))
 	local renderer = ffi.string(gl.GetString(GL.RENDERER))
 
-	-- print(string.format("%s %s %s", version, vendor, renderer))
+	print(string.format("OpenGL %s on %s", version, renderer))
+
+	-- Useful for figuring out events and such.
+	local function translate_sdl(value)
+		local translated
+		for k,v in pairs(sdl) do
+			if value == v then
+				translated = k
+				break
+			end
+		end
+		return translated or "<unknown>"
+	end
+
+	local function handle_events()
+		local event = ffi.new("SDL_Event[?]", 1)
+		sdl.pollEvent(event)
+		event = event[0]
+		-- No event, we're done here.
+		if event.type == 0 then
+			return true
+		end
+
+		local handlers = {
+			[sdl.KEYDOWN] = function(event)
+				print("key down")
+				local e = event.key.keysym
+				local key = e.sym
+				if key == 27 then
+					print("GOODBYE MY FRIEND")
+					return false
+				end
+			end
+		}
+
+		if handlers[event.type] then
+			return handlers[event.type](event)
+		end
+
+		print(string.format("Unhandled event type: %s", translate_sdl(event.type)))
+		return true
+	end
 
 	local start = sdl.getTicks()
-	while true do
+	while handle_events() do
 		local now = (sdl.getTicks() - start) / 1000
 
 		gl.ClearColor(255, 0, 255, 255)
 		gl.Clear(bit.bor(tonumber(GL.COLOR_BUFFER_BIT), tonumber(GL.DEPTH_BUFFER_BIT)))
 
 		sdl.GL_SwapWindow(window)
-
-		if now > 2.5 then
-			break
-		end
+		sdl.delay(1)
 	end
 
 	sdl.GL_MakeCurrent(window, nil)
